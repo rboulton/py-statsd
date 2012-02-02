@@ -1,6 +1,7 @@
 import re
 from socket import AF_INET, SOCK_DGRAM, socket
 import threading
+import sys
 import time
 import types
 import logging
@@ -172,6 +173,7 @@ class Server(object):
 
         if self.transport == 'graphite':
             
+            log.info("Sending data to graphite")
             stat_string += "statsd.numStats %s %d\n" % (stats, ts)
             graphite = socket()
             graphite.connect((self.graphite_host, self.graphite_port))
@@ -229,7 +231,6 @@ class ServerDaemon(Daemon):
         server.serve(options.name, options.port)
 
 def run_server():
-    import sys
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', help='debug mode', default=False)
@@ -247,11 +248,18 @@ def run_server():
     parser.add_argument('--timers-prefix', dest='timers_prefix', help='prefix to append before sending timing data to graphite (default: statsd.timers)', type=str, default='statsd.timers')
     parser.add_argument('-t', '--pct', dest='pct', help='stats pct threshold (default: 90)', type=int, default=90)
     parser.add_argument('-D', '--daemon', dest='daemonize', action='store_true', help='daemonize', default=False)
+    parser.add_argument('-l', '--log-file', dest='log_file', help='Log file, default is STDOUT', type=str)
     parser.add_argument('--pidfile', dest='pidfile', action='store', help='pid file', default='/tmp/pystatsd.pid')
     parser.add_argument('--restart', dest='restart', action='store_true', help='restart a running daemon', default=False)
     parser.add_argument('--stop', dest='stop', action='store_true', help='stop a running daemon', default=False)
     options = parser.parse_args(sys.argv[1:])
 
+    if options.log_file:
+        logfile = open(options.log_file, 'a')
+    else:
+        logfile = sys.stdout
+
+    log.addHandler(logging.StreamHandler(logfile))
     daemon = ServerDaemon(options.pidfile)
     if options.daemonize:
         daemon.start(options)
