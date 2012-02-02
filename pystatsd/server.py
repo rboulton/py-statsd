@@ -81,8 +81,8 @@ class Server(object):
         for bit in bits:
             sample_rate = 1;
             fields = bit.split('|')
-            if None==fields[1]:
-                log.error('Bad line: %s' % bit)
+            if len(fields) < 2:
+                log.error('Bad line: %s' % data)
                 return
 
             if (fields[1] == 'ms'):
