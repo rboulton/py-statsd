@@ -110,8 +110,7 @@ class Server(object):
             v = float(v)
             v = v if self.no_aggregate_counters else v / (self.flush_interval / 1000)
 
-            if self.debug:
-                log.debug("Sending %s => count=%s" % ( k, v ))
+            log.debug("Sending %s => count=%s" % ( k, v ))
 
             if self.transport == 'graphite':
                 msg = '%s.%s %s %s\n' % (self.counters_prefix, k, v, ts)
@@ -143,8 +142,7 @@ class Server(object):
 
                 self.timers[k] = []
 
-                if self.debug:
-                    log.debug("Sending %s ====> lower=%s, mean=%s, upper=%s, %dpct=%s, count=%s" % ( k, min, mean, max, self.pct_threshold, max_threshold, count ))
+                log.debug("Sending %s ====> lower=%s, mean=%s, upper=%s, %dpct=%s, count=%s" % ( k, min, mean, max, self.pct_threshold, max_threshold, count ))
 
                 if self.transport == 'graphite':
 
@@ -175,15 +173,17 @@ class Server(object):
             
             log.info("Sending data to graphite")
             stat_string += "statsd.numStats %s %d\n" % (stats, ts)
-            graphite = socket()
-            graphite.connect((self.graphite_host, self.graphite_port))
-            graphite.sendall(stat_string)
-            graphite.close()
+            try:
+                graphite = socket()
+                graphite.connect((self.graphite_host, self.graphite_port))
+                graphite.sendall(stat_string)
+                graphite.close()
+            except Exception, e:
+                log.error("Error while sending to graphite: %s", e)
         
         self._set_timer()
 
-        if self.debug:
-            log.debug("\n================== Flush completed. Waiting until next flush. Sent out %d metrics =======" % ( stats ))
+        log.debug("\n================== Flush completed. Waiting until next flush. Sent out %d metrics =======" % ( stats ))
 
 
     def _set_timer(self):
@@ -216,7 +216,6 @@ class ServerDaemon(Daemon):
         if setproctitle:
             setproctitle('pystatsd')
         server = Server(pct_threshold = options.pct,
-                        debug = options.debug,
                         transport = options.transport,
                         graphite_host = options.graphite_host,
                         graphite_port = options.graphite_port,
@@ -261,6 +260,8 @@ def run_server():
         logfile = sys.stdout
 
     log.addHandler(logging.StreamHandler(logfile))
+    if options.debug:
+        options.log_level = "debug"
     log.setLevel(getattr(logging, options.log_level.upper()))
     
     daemon = ServerDaemon(options.pidfile)
