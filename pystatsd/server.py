@@ -111,7 +111,7 @@ class Server(object):
             v = v if self.no_aggregate_counters else v / (self.flush_interval / 1000)
 
             if self.debug:
-                print "Sending %s => count=%s" % ( k, v )
+                log.debug("Sending %s => count=%s" % ( k, v ))
 
             if self.transport == 'graphite':
                 msg = '%s.%s %s %s\n' % (self.counters_prefix, k, v, ts)
@@ -144,7 +144,7 @@ class Server(object):
                 self.timers[k] = []
 
                 if self.debug:
-                    print "Sending %s ====> lower=%s, mean=%s, upper=%s, %dpct=%s, count=%s" % ( k, min, mean, max, self.pct_threshold, max_threshold, count )
+                    log.debug("Sending %s ====> lower=%s, mean=%s, upper=%s, %dpct=%s, count=%s" % ( k, min, mean, max, self.pct_threshold, max_threshold, count ))
 
                 if self.transport == 'graphite':
 
@@ -183,7 +183,7 @@ class Server(object):
         self._set_timer()
 
         if self.debug:
-            print "\n================== Flush completed. Waiting until next flush. Sent out %d metrics =======" % ( stats )
+            log.debug("\n================== Flush completed. Waiting until next flush. Sent out %d metrics =======" % ( stats ))
 
 
     def _set_timer(self):
@@ -249,17 +249,20 @@ def run_server():
     parser.add_argument('-t', '--pct', dest='pct', help='stats pct threshold (default: 90)', type=int, default=90)
     parser.add_argument('-D', '--daemon', dest='daemonize', action='store_true', help='daemonize', default=False)
     parser.add_argument('-l', '--log-file', dest='log_file', help='Log file, default is STDOUT', type=str)
+    parser.add_argument('-L', '--log-level', dest='log_level', help='Log level, default is warn', type=str, default="warn")
     parser.add_argument('--pidfile', dest='pidfile', action='store', help='pid file', default='/tmp/pystatsd.pid')
     parser.add_argument('--restart', dest='restart', action='store_true', help='restart a running daemon', default=False)
     parser.add_argument('--stop', dest='stop', action='store_true', help='stop a running daemon', default=False)
     options = parser.parse_args(sys.argv[1:])
 
-    if options.log_file:
+    if options.log_file and not options.debug:
         logfile = open(options.log_file, 'a')
     else:
         logfile = sys.stdout
 
     log.addHandler(logging.StreamHandler(logfile))
+    log.setLevel(getattr(logging, options.log_level.upper()))
+    
     daemon = ServerDaemon(options.pidfile)
     if options.daemonize:
         daemon.start(options)
