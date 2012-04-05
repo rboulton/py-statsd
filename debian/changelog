@@ -1,11 +1,52 @@
-python-statsd (1.0-3) UNRELEASED; urgency=low
+python-statsd (1.1) UNRELEASED; urgency=low
 
   [ Aaron Brady ]
   * Be consistent about pystatsd vs. pystatd
   * Fix upstart script with correct binary name
   * Upgrade path for people with the previous package
 
- -- Aaron Brady <bradya@gmail.com>  Thu, 01 Dec 2011 16:26:25 +0000
+  [ Joe Shaw ]
+  * Timing fixes
+  * Timer context manager function
+  * Change default namespace from statsd to stats (Matching upstream)
+
+  [ Andy Smith ]
+  * Readme grammar fixes...
+
+  [ Tim Baldoni ]
+  * Exception handling for graphite socket
+  * README troubleshooting section
+
+  [ Nick Stielau ]
+  * Helper script to send metrics to statsd
+
+  [ Aaron Brady ]
+  * Make naming (pystatd/py-statsd/pystatsd) consistent
+
+  [ Lars Fronius ]
+  * Require python2.6
+
+  [ Avishai Ish-Shalom ]
+  * Fix field check
+  * Clean up logging
+
+  [ Patrice Neff ]
+  * Clean up exception handling for the socket
+  * Ensure a timer is always set even when the socket fails
+
+  [ Adam Hitchcock ]
+  * Add Gauge support to client
+
+  [ Darrell Bishop ]
+  * Add locking for stats state
+
+  [ Sharif Nassar ]
+  * Ensure pidfile is not world writable
+
+  [ Jonty Wareing ]
+  * Add Gauge support to server
+
+ -- Jonty Wareing <jonty@jonty.co.uk>  Thu, 05 Apr 2012 17:15:25 +0000
 
 python-statsd (1.0-2) UNRELEASED; urgency=low
 
