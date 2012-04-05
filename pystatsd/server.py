@@ -44,7 +44,7 @@ class Server(object):
                  ganglia_host='localhost', ganglia_port=8649, ganglia_spoof_host='statd:statd',
                  graphite_host='localhost', graphite_port=2003,
                  flush_interval=10000, no_aggregate_counters = False, counters_prefix = 'stats',
-                 timers_prefix = 'stats.timers'):
+                 timers_prefix = 'stats.timers', gauges_prefix='stats.gauges'):
         self._sock = None
         self._timer = None
         self._lock = threading.Lock()
@@ -68,10 +68,12 @@ class Server(object):
         self.no_aggregate_counters = no_aggregate_counters
         self.counters_prefix = counters_prefix
         self.timers_prefix = timers_prefix
+        self.gauges_prefix = gauges_prefix
         self.debug = debug
 
         self.counters = {}
         self.timers = {}
+        self.gauges = {}
         self.flusher = 0
 
     def process(self, data):
@@ -95,6 +97,8 @@ class Server(object):
                 if key not in self.timers:
                     self.timers[key] = []
                 self.timers[key].append(float(fields[0] or 0))
+            elif (fields[1] == 'g'):
+                self.gauges[key] = float(fields[0] or 0)
             else:
                 if len(fields) == 3:
                     sample_rate = float(re.match('^@([\d\.]+)', fields[2]).groups()[0])
@@ -189,6 +193,16 @@ class Server(object):
                     
                 stats += 1
 
+        for k, v in self.gauges.items():
+            if self.transport == 'graphite':
+                log.debug("Sending %s => gauge=%s" % ( k, v ))
+                msg = '%s.%s %s %s\n' % (self.gauges_prefix, k, v, ts)
+                stat_string += msg
+            else:
+                log.error("Sending gauge data to Ganglia is not yet supported.")
+
+            stats += 1
+
         if self.transport == 'graphite':
             
             log.info("Sending data to graphite")
@@ -240,7 +254,8 @@ class ServerDaemon(Daemon):
                         flush_interval = options.flush_interval,
                         no_aggregate_counters = options.no_aggregate_counters,
                         counters_prefix = options.counters_prefix,
-                        timers_prefix = options.timers_prefix)
+                        timers_prefix = options.timers_prefix,
+                        gauges_prefix = options.gauges_prefix)
         
         server.serve(options.name, options.port)
 
@@ -260,6 +275,7 @@ def run_server():
     parser.add_argument('--no-aggregate-counters', dest='no_aggregate_counters', help='should statsd report counters as absolute instead of count/sec', action='store_true')
     parser.add_argument('--counters-prefix', dest='counters_prefix', help='prefix to append before sending counter data to graphite (default: stats)', type=str, default='stats')
     parser.add_argument('--timers-prefix', dest='timers_prefix', help='prefix to append before sending timing data to graphite (default: stats.timers)', type=str, default='stats.timers')
+    parser.add_argument('--gauges-prefix', dest='gauges_prefix', help='prefix to append before sending gauge data to graphite (default: stats.gauges)', type=str, default='stats.gauges')
     parser.add_argument('-t', '--pct', dest='pct', help='stats pct threshold (default: 90)', type=int, default=90)
     parser.add_argument('-D', '--daemon', dest='daemonize', action='store_true', help='daemonize', default=False)
     parser.add_argument('-l', '--log-file', dest='log_file', help='Log file, default is STDOUT', type=str)
