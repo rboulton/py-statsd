@@ -207,7 +207,7 @@ class Server(object):
             
             log.info("Sending data to graphite")
             stat_string += "statsd.numStats %s %d\n" % (stats, ts)
-            graphite = socket()
+            graphite = socket.socket()
             graphite.connect((self.graphite_host, self.graphite_port))
             graphite.sendall(stat_string)
             graphite.close()
