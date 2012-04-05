@@ -20,5 +20,5 @@ setup(
     classifiers=[
         "License :: OSI Approved :: BSD License",
     ],
-    scripts=['bin/pystatsd-server']
+    scripts=['bin/pystatsd-server', 'bin/pystat']
 )
