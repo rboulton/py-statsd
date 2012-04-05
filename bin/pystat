@@ -42,6 +42,11 @@ parser.add_argument('--timing',
                     action='store_true',
                     help='Send timing statistics rather than counters.',
                     default=False)
+parser.add_argument('--gauge',
+                    dest='gauge',
+                    action='store_true',
+                    help='Send gauge values rather than counters.',
+                    default=False)
 options = parser.parse_args(sys.argv[1:])
 
 
@@ -54,6 +59,10 @@ if options.timing:
     client.timing(options.stat,
                   options.value,
                   options.sample_rate)
+elif options.gauge:
+    client.gauge(options.stat,
+                 options.value,
+                 options.sample_rate)
 else:
     client.update_stats(options.stat,
                         options.value,
