@@ -42,8 +42,7 @@ class Client(object):
         """
         self.timing(stats, (time.time() - start) * 1000, sample_rate)
 
-
-    def timing(self, stats, time, sample_rate=1):
+    def timing(self, stat, time, sample_rate=1):
         """
         Log timing information for one or more stats, in milliseconds
         >>> statsd_client.timing('some.time', 500)
@@ -52,6 +51,14 @@ class Client(object):
             stats = [stats]
         data = dict((stat, "%f|ms" % time) for stat in stats)
         self.send(data, sample_rate)
+
+    def gauge(self, stat, value, sample_rate=1):
+        """
+        Log gauge information for a single stat
+        >>> statsd_client.gauge('some.gauge',42)
+        """
+        stats = {stat: "%f|g" % value}
+        self.send(stats, sample_rate)
 
     def increment(self, stats, sample_rate=1):
         """
