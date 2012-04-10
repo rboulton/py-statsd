@@ -1,4 +1,11 @@
-python-statsd (1.1) UNRELEASED; urgency=low
+python-statsd (1.1+nmu2) squeeze; urgency=low
+
+  * Non-maintainer upload.
+  * Fix typo and add debian init script 
+
+ -- David Bishop <david@fatbox.ca>  Mon, 09 Apr 2012 23:04:36 -0400
+
+python-statsd (1.1) squeeze; urgency=low
 
   [ Aaron Brady ]
   * Be consistent about pystatsd vs. pystatd
