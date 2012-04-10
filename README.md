@@ -20,11 +20,12 @@ See statsd_test for sample usage:
     srvr = Server(debug=True)
     srvr.serve()
 
-    sc = Client('example.org',8125)
+    sc = Client('example.org', 8125)
 
-    sc.timing('python_test.time',500)
+    sc.timing('python_test.time', 500)
     sc.increment('python_test.inc_int')
     sc.decrement('python_test.decr_int')
+    sc.gauge('python_test.amount', 42)
 
 
 Building a Debian Package
