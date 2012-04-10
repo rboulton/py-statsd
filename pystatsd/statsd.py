@@ -42,7 +42,7 @@ class Client(object):
         """
         self.timing(stats, (time.time() - start) * 1000, sample_rate)
 
-    def timing(self, stat, time, sample_rate=1):
+    def timing(self, stats, time, sample_rate=1):
         """
         Log timing information for one or more stats, in milliseconds
         >>> statsd_client.timing('some.time', 500)
