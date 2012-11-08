@@ -9,23 +9,13 @@ import socket
 import random
 import time
 
-# Sends statistics to the stats daemon over UDP
-class Client(object):
+class BaseClient(object):
 
     def __init__(self, host='localhost', port=8125, prefix=None):
-        """
-        Create a new Statsd client.
-        * host: the host where statsd is listening, defaults to localhost
-        * port: the port where statsd is listening, defaults to 8125
-
-        >>> from pystatsd import statsd
-        >>> stats_client = statsd.Statsd(host, port)
-        """
         self.host = host
         self.port = int(port)
         self.prefix = prefix
         self.log = logging.getLogger("pystatsd.client")
-        self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     @contextlib.contextmanager
     def timer(self, stats, sample_rate=1):
@@ -87,10 +77,34 @@ class Client(object):
         self.send(data, sample_rate)
 
     def send(self, data, sample_rate=1):
+        raise NotImplementedError
+
+
+class Client(BaseClient):
+    """Normal UDP client.  This is probably what you want to use.
+
+    Sends statistics to the stats daemon over UDP
+
+    """
+    def __init__(self, *args, **kwargs):
+        """Create a new Statsd client.
+
+        * host: the host where statsd is listening, defaults to localhost
+        * port: the port where statsd is listening, defaults to 8125
+        * prefix: a prefix to prepend to all logged stats
+
+        >>> from pystatsd import statsd
+        >>> stats_client = statsd.Statsd(host, port)
+
+        """
+        super(Client, self).__init__(*args, **kwargs)
+        self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.addr = (self.host, self.port)
+
+    def send(self, data, sample_rate=1):
         """
         Squirt the metrics over UDP
         """
-        addr = (self.host, self.port)
 
         if self.prefix:
             data = dict((".".join((self.prefix, stat)), value) for stat, value in data.iteritems())
@@ -100,9 +114,29 @@ class Client(object):
                 return
             sampled_data = dict((stat, "%s|@%s" % (value, sample_rate)) for stat, value in data.iteritems())
         else:
-            sampled_data=data
+            sampled_data = data
 
         try:
             [self.udp_sock.sendto("%s:%s" % (stat, value), addr) for stat, value in sampled_data.iteritems()]
         except:
             self.log.exception("unexpected error")
+
+
+class MockClient(Client):
+
+    def __init__(self, *args, **kwargs):
+        super(Client, self).__init__(*args, **kwargs)
+
+    def send(self, data, sample_rate=1):
+        if self.prefix:
+            data = dict((".".join((self.prefix, stat)), value) for stat, value in data.iteritems())
+
+        for stat, value in data.iteritems():
+            if value.endswith("|ms"):
+                self.log.info("timing(%s, %s)" % (stat, value[:-3]))
+            elif value.endswith("|g"):
+                self.log.info("gauge(%s, %s)" % (stat, value[:-2]))
+            elif value.endswith("|c"):
+                self.log.info("update(%s, %s)" % (stat, value[:-2]))
+            else:
+                self.log.info("stat msg(%s, %s)" % (stat, value))
