@@ -9,6 +9,7 @@ import socket
 import random
 import time
 
+
 class BaseClient(object):
 
     def __init__(self, host='localhost', port=8125, prefix=None):
@@ -86,6 +87,7 @@ class Client(BaseClient):
     Sends statistics to the stats daemon over UDP
 
     """
+
     def __init__(self, *args, **kwargs):
         """Create a new Statsd client.
 
@@ -133,10 +135,10 @@ class MockClient(Client):
 
         for stat, value in data.iteritems():
             if value.endswith("|ms"):
-                self.log.info("timing(%s, %s)" % (stat, value[:-3]))
+                self.log.debug("timing(%s, %s)" % (stat, value[:-3]))
             elif value.endswith("|g"):
-                self.log.info("gauge(%s, %s)" % (stat, value[:-2]))
+                self.log.debug("gauge(%s, %s)" % (stat, value[:-2]))
             elif value.endswith("|c"):
-                self.log.info("update(%s, %s)" % (stat, value[:-2]))
+                self.log.debug("update(%s, %s)" % (stat, value[:-2]))
             else:
-                self.log.info("stat msg(%s, %s)" % (stat, value))
+                self.log.debug("stat msg(%s, %s)" % (stat, value))
