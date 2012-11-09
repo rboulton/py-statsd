@@ -27,6 +27,9 @@ See statsd_test for sample usage:
     sc.decrement('python_test.decr_int')
     sc.gauge('python_test.amount', 42)
 
+Also, use pystatsd.MockClient for debugging (sends output via the python
+logging system, instead of sending to statsd).
+
 
 Building a Debian Package
 -------------
