@@ -119,7 +119,7 @@ class Client(BaseClient):
             sampled_data = data
 
         try:
-            [self.udp_sock.sendto("%s:%s" % (stat, value), addr) for stat, value in sampled_data.iteritems()]
+            [self.udp_sock.sendto("%s:%s" % (stat, value), self.addr) for stat, value in sampled_data.iteritems()]
         except:
             self.log.exception("unexpected error")
 
