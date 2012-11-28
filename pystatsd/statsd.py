@@ -12,7 +12,7 @@ import time
 
 class BaseClient(object):
 
-    def __init__(self, host='localhost', port=8125, prefix=None):
+    def __init__(self, host='127.0.0.1', port=8125, prefix=None):
         self.host = host
         self.port = int(port)
         self.prefix = prefix
@@ -91,7 +91,7 @@ class Client(BaseClient):
     def __init__(self, *args, **kwargs):
         """Create a new Statsd client.
 
-        * host: the host where statsd is listening, defaults to localhost
+        * host: the host where statsd is listening, defaults to 127.0.0.1
         * port: the port where statsd is listening, defaults to 8125
         * prefix: a prefix to prepend to all logged stats
 
