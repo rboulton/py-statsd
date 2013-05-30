@@ -12,7 +12,7 @@ import time
 
 class BaseClient(object):
 
-    def __init__(self, host='localhost', port=8125, prefix=None):
+    def __init__(self, host='127.0.0.1', port=8125, prefix=None):
         self.host = host
         self.port = int(port)
         self.prefix = prefix
