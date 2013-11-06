@@ -119,9 +119,13 @@ class Client(BaseClient):
             sampled_data = data
 
         try:
-            [self.udp_sock.sendto("%s:%s" % (stat, value), self.addr) for stat, value in sampled_data.iteritems()]
-        except:
-            self.log.exception("unexpected error")
+            try:
+                [self.udp_sock.sendto("%s:%s" % (stat, value), self.addr) for stat, value in sampled_data.iteritems()]
+            except socket.gaierror:
+                self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                [self.udp_sock.sendto("%s:%s" % (stat, value), self.addr) for stat, value in sampled_data.iteritems()]
+        except Exception:
+            self.log.exception("unexpected error sending to %r", self.addr)
 
 
 class MockClient(Client):
